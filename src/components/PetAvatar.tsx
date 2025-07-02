@@ -1,25 +1,25 @@
-import React, { useState } from 'react'
-import ThreePet from './ThreePet'
-import { PetState } from '../types'
+import React, { useState } from "react";
+import ThreePet from "./ThreePet";
+import { PetState } from "../types";
 
 interface PetAvatarProps {
-  petState: PetState
-  onPetTap: () => void
+  petState: PetState;
+  onPetTap: () => void;
 }
 
 const PetAvatar: React.FC<PetAvatarProps> = ({ petState, onPetTap }) => {
-  const [showControls, setShowControls] = useState(true)
+  const [showControls, setShowControls] = useState(true);
 
   const getMoodMessage = () => {
     switch (petState.mood) {
-      case 'happy':
-        return `is thrilled! You're crushing your fitness goals! 🌟`
-      case 'sad':
-        return `is feeling a bit down. Let's get moving together! 💪`
+      case "happy":
+        return `is thrilled! You're crushing your fitness goals! 🌟`;
+      case "sad":
+        return `is feeling a bit down. Let's get moving together! 💪`;
       default:
-        return `is doing okay. Keep working towards your goals! 🎯`
+        return `is doing okay. Keep working towards your goals! 🎯`;
     }
-  }
+  };
 
   return (
     <div className="flex-1 flex flex-col p-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
@@ -31,10 +31,10 @@ const PetAvatar: React.FC<PetAvatarProps> = ({ petState, onPetTap }) => {
           {getMoodMessage()}
         </p>
       </div>
-      
-      <div className="flex-1 backdrop-blur-md bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/20 rounded-3xl shadow-2xl overflow-hidden relative text-gray-800 dark:text-gray-100 h-full min-h-0">
+
+      <div className="flex-1 grid backdrop-blur-md bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/20 rounded-3xl shadow-2xl overflow-hidden relative text-gray-800 dark:text-gray-100 h-full min-h-0">
         <ThreePet petState={petState} onPetTap={onPetTap} />
-        
+
         {showControls && (
           <div className="absolute bottom-4 left-4 right-4">
             <div className="backdrop-blur-md bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/20 rounded-2xl shadow-2xl px-4 py-3 flex items-center justify-between text-gray-800 dark:text-gray-100">
@@ -52,7 +52,7 @@ const PetAvatar: React.FC<PetAvatarProps> = ({ petState, onPetTap }) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PetAvatar
+export default PetAvatar;
