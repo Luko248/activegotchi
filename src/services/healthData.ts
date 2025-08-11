@@ -6,7 +6,9 @@ export class HealthDataService {
     steps: 7234,
     distance: 5.2,
     goalSteps: 10000,
-    goalDistance: 8.0
+    goalDistance: 8.0,
+    sleepHours: 6.2,
+    goalSleepHours: 7.5
   }
 
   static getInstance(): HealthDataService {
@@ -61,5 +63,9 @@ export class HealthDataService {
       stepsProgress: Math.min((this.mockData.steps / this.mockData.goalSteps) * 100, 100),
       distanceProgress: Math.min((this.mockData.distance / this.mockData.goalDistance) * 100, 100)
     }
+  }
+
+  hasGoodSleep(): boolean {
+    return (this.mockData.sleepHours ?? 0) >= (this.mockData.goalSleepHours ?? 7)
   }
 }

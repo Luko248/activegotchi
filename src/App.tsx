@@ -1,28 +1,32 @@
-import { useState, useEffect } from 'react'
-import Onboarding from './components/Onboarding'
-import MainApp from './components/MainApp'
-import { useTheme } from './hooks/useTheme'
+import { useState, useEffect } from "react";
+import Onboarding from "./components/Onboarding";
+import { MobileApp } from "./components/mobile/MobileApp";
+import { useTheme } from "./hooks/useTheme";
+import { usePetStore } from "./store/petStore";
 
 function App() {
-  const [petName, setPetName] = useState<string>('')
-  const [isOnboarded, setIsOnboarded] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  useTheme() // Initialize theme detection
+  const [petName, setPetName] = useState<string>("");
+  const [isOnboarded, setIsOnboarded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  useTheme(); // Initialize theme detection
+  const pet = usePetStore((s) => s.pet);
 
   useEffect(() => {
-    const storedPetName = localStorage.getItem('activegotchi-pet-name')
-    if (storedPetName) {
-      setPetName(storedPetName)
-      setIsOnboarded(true)
+    const storedPetName = localStorage.getItem("activegotchi-pet-name");
+    if (storedPetName && pet?.alive !== false) {
+      setPetName(storedPetName);
+      setIsOnboarded(true);
+    } else {
+      setIsOnboarded(false);
     }
-    setIsLoading(false)
-  }, [])
+    setIsLoading(false);
+  }, [pet?.alive]);
 
   const handleOnboardingComplete = (name: string) => {
-    setPetName(name)
-    setIsOnboarded(true)
-    localStorage.setItem('activegotchi-pet-name', name)
-  }
+    setPetName(name);
+    setIsOnboarded(true);
+    localStorage.setItem("activegotchi-pet-name", name);
+  };
 
   if (isLoading) {
     return (
@@ -31,14 +35,14 @@ function App() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!isOnboarded) {
-    return <Onboarding onComplete={handleOnboardingComplete} />
+    return <Onboarding onComplete={handleOnboardingComplete} />;
   }
 
-  return <MainApp petName={petName} />
+  return <MobileApp petName={petName} />;
 }
 
-export default App
+export default App;

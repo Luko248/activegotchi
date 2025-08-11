@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import PetAvatar from './PetAvatar'
 import FitnessCarousel from './FitnessCarousel'
+import { WeeklyProgressMap } from './progress/WeeklyProgressMap'
 import { HealthDataService } from '../services/healthData'
 import { PetState, HealthData } from '../types'
+import { useProgressData } from '../hooks/useProgressData'
 
 interface MainAppProps {
   petName: string
@@ -21,6 +23,7 @@ const MainApp: React.FC<MainAppProps> = ({ petName }) => {
   })
 
   const healthService = HealthDataService.getInstance()
+  const { updateTodayProgress } = useProgressData()
 
   useEffect(() => {
     const fetchHealthData = async () => {
@@ -40,10 +43,11 @@ const MainApp: React.FC<MainAppProps> = ({ petName }) => {
       const data = healthService.getHealthData()
       setHealthData(data)
       updatePetMood()
+      updateTodayProgress(data)
     }, 30000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [updateTodayProgress])
 
   const updatePetMood = () => {
     const progress = healthService.getGoalProgress()
@@ -69,6 +73,7 @@ const MainApp: React.FC<MainAppProps> = ({ petName }) => {
     const updatedData = healthService.getHealthData()
     setHealthData(updatedData)
     updatePetMood()
+    updateTodayProgress(updatedData)
   }
 
   const handleResetPet = () => {
@@ -93,7 +98,8 @@ const MainApp: React.FC<MainAppProps> = ({ petName }) => {
           onPetTap={handlePetTap}
         />
         
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 space-y-4 px-4">
+          <WeeklyProgressMap />
           <FitnessCarousel healthData={healthData} />
         </div>
       </div>

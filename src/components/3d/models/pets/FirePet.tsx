@@ -1,109 +1,85 @@
-import React, { useRef, useMemo } from 'react';
-import { Sphere, Box } from '@react-three/drei';
+import React, { useMemo, useRef } from 'react';
+import { Sphere } from '@react-three/drei';
 import { Mesh } from 'three';
+import { useFrame } from '@react-three/fiber';
 import BasePet, { BasePetProps } from './BasePet';
 
 const FirePet: React.FC<BasePetProps> = ({ petState, onPetTap }) => {
-  const bodyRef = useRef<Mesh>(null);
-  const headRef = useRef<Mesh>(null);
-  
-  // Fire color palette
+  // Color palette (primary can be overridden by petState.primaryColor)
+  const pastel = (hex: string) => {
+    const h = hex.replace('#','');
+    const r = parseInt(h.substring(0,2),16);
+    const g = parseInt(h.substring(2,4),16);
+    const b = parseInt(h.substring(4,6),16);
+    const mix = (c:number) => Math.round(c + (255-c)*0.25);
+    const toHex = (v:number) => v.toString(16).padStart(2,'0');
+    return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
+  }
+  const basePrimary = petState.primaryColor || '#7CC6FF';
   const fireColors = useMemo(() => ({
-    primary: '#1E88E5',  // Keeping the blue base
-    secondary: '#0D47A1', // Darker blue for accents
-    flame: '#FF9800',    // Orange for flames
-    flameCore: '#FFEB3B', // Yellow for flame cores
-    flameEdge: '#FF5722' // Deep orange for flame edges
-  }), []);
+    primary: pastel(basePrimary),
+    secondary: '#3A86FF',
+    flame: '#FF9800',
+    flameCore: '#FFEB3B',
+    flameEdge: '#FF5722'
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [basePrimary]);
+
+  const mouthRef = useRef<Mesh>(null)
+  const baseEyeY = 0.2
+  const baseEyeZ = 0.85
+  const baseEyeDX = 0.32
+  const eyeRadius = 0.18
+  const pupilRadius = 0.06
+  const smileActive = useRef(false)
+  const smileTime = useRef(0)
+  const smileDuration = 0.9
+
+  useFrame((_, delta) => {
+    // Eyes remain static; only animate smile lifecycle
+    if (smileActive.current) {
+      smileTime.current += delta
+      if (mouthRef.current) {
+        const phase = Math.min(1, smileTime.current / smileDuration)
+        const s = Math.sin(phase * Math.PI)
+        mouthRef.current.scale.set(1, 0.35 * s, 0.35 * s)
+      }
+      if (smileTime.current >= smileDuration) {
+        smileActive.current = false
+        smileTime.current = 0
+        if (mouthRef.current) mouthRef.current.scale.set(1, 0.0001, 0.0001)
+      }
+    }
+  })
 
   return (
     <BasePet petState={petState} onPetTap={onPetTap}>
-      {/* Body */}
-      <Sphere ref={bodyRef} args={[1.2, 32, 32]} position={[0, -0.5, 0]}>
-        <meshStandardMaterial color={fireColors.primary} />
-      </Sphere>
-      
-      {/* Head */}
-      <Sphere ref={headRef} args={[1.0, 32, 32]} position={[0, 1.3, 0]}>
-        <meshStandardMaterial color={fireColors.primary} />
+      {/* Head only, centered */}
+      <Sphere args={[1.0, 64, 64]} position={[0, 0, 0]}
+        onPointerDown={(e)=>{ e.stopPropagation(); onPetTap(); smileActive.current = true; smileTime.current = 0; }}
+      >
+        <meshStandardMaterial color={fireColors.primary} roughness={0.5} metalness={0.05} />
       </Sphere>
       
       {/* Eyes */}
-      <Sphere args={[0.15, 16, 16]} position={[-0.3, 1.5, 0.7]}>
-        <meshStandardMaterial color="white" />
+      <Sphere args={[eyeRadius, 32, 32]} position={[-baseEyeDX, baseEyeY, 0.7]}>
+        <meshStandardMaterial color="white" roughness={0.1} metalness={0.3} />
       </Sphere>
-      <Sphere args={[0.15, 16, 16]} position={[0.3, 1.5, 0.7]}>
-        <meshStandardMaterial color="white" />
+      <Sphere args={[eyeRadius, 32, 32]} position={[baseEyeDX, baseEyeY, 0.7]}>
+        <meshStandardMaterial color="white" roughness={0.1} metalness={0.3} />
       </Sphere>
       
       {/* Pupils */}
-      <Sphere args={[0.08, 16, 16]} position={[-0.3, 1.5, 0.85]}>
-        <meshStandardMaterial color="black" />
+      <Sphere args={[pupilRadius, 32, 32]} position={[-baseEyeDX, baseEyeY, baseEyeZ]}>
+        <meshStandardMaterial color="#111827" roughness={0.05} metalness={0.6} />
       </Sphere>
-      <Sphere args={[0.08, 16, 16]} position={[0.3, 1.5, 0.85]}>
-        <meshStandardMaterial color="black" />
+      <Sphere args={[pupilRadius, 32, 32]} position={[baseEyeDX, baseEyeY, baseEyeZ]}>
+        <meshStandardMaterial color="#111827" roughness={0.05} metalness={0.6} />
       </Sphere>
-      
-      {/* Happy eyebrows */}
-      <Box args={[0.3, 0.05, 0.05]} position={[-0.3, 1.75, 0.7]} rotation={[0, 0, 0.2]}>
-        <meshStandardMaterial color={fireColors.secondary} />
-      </Box>
-      <Box args={[0.3, 0.05, 0.05]} position={[0.3, 1.75, 0.7]} rotation={[0, 0, -0.2]}>
-        <meshStandardMaterial color={fireColors.secondary} />
-      </Box>
-      
-      {/* Big smile */}
-      <Sphere args={[0.5, 16, 16]} position={[0, 1.0, 0.7]} scale={[1, 0.6, 0.5]}>
-        <meshStandardMaterial color="#FF6B6B" />
-      </Sphere>
-      
-      {/* Cheeks */}
-      <Sphere args={[0.25, 16, 16]} position={[-0.5, 1.1, 0.6]} scale={[1, 0.6, 0.6]}>
-        <meshStandardMaterial color="#FF9AA2" />
-      </Sphere>
-      <Sphere args={[0.25, 16, 16]} position={[0.5, 1.1, 0.6]} scale={[1, 0.6, 0.6]}>
-        <meshStandardMaterial color="#FF9AA2" />
-      </Sphere>
-      
-      {/* FIRE EFFECTS */}
-      {/* Main flame crown */}
-      <group position={[0, 1.8, 0]} rotation={[0, 0, 0]}>
-        {/* Central flame */}
-        <Sphere args={[0.7, 16, 16]} position={[0, 0.5, 0]} scale={[0.7, 1.2, 0.7]}>
-          <meshStandardMaterial color={fireColors.flame} emissive={fireColors.flame} emissiveIntensity={0.5} />
-        </Sphere>
-        <Sphere args={[0.5, 16, 16]} position={[0, 0.7, 0]} scale={[0.6, 1.0, 0.6]}>
-          <meshStandardMaterial color={fireColors.flameCore} emissive={fireColors.flameCore} emissiveIntensity={0.8} />
-        </Sphere>
-        
-        {/* Side flames */}
-        <Sphere args={[0.5, 16, 16]} position={[-0.5, 0.3, 0]} scale={[0.6, 1.0, 0.6]}>
-          <meshStandardMaterial color={fireColors.flameEdge} emissive={fireColors.flameEdge} emissiveIntensity={0.5} />
-        </Sphere>
-        <Sphere args={[0.5, 16, 16]} position={[0.5, 0.3, 0]} scale={[0.6, 1.0, 0.6]}>
-          <meshStandardMaterial color={fireColors.flameEdge} emissive={fireColors.flameEdge} emissiveIntensity={0.5} />
-        </Sphere>
-        
-        {/* Back flame */}
-        <Sphere args={[0.4, 16, 16]} position={[0, 0.4, -0.5]} scale={[0.6, 1.0, 0.6]}>
-          <meshStandardMaterial color={fireColors.flame} emissive={fireColors.flame} emissiveIntensity={0.5} />
-        </Sphere>
-      </group>
-      
-      {/* Flame particles */}
-      <Sphere args={[0.15, 16, 16]} position={[-0.8, 2.0, 0.2]} scale={[0.7, 1.2, 0.7]}>
-        <meshStandardMaterial color={fireColors.flameCore} emissive={fireColors.flameCore} emissiveIntensity={0.8} />
-      </Sphere>
-      <Sphere args={[0.12, 16, 16]} position={[0.7, 2.2, 0.1]} scale={[0.6, 1.0, 0.6]}>
-        <meshStandardMaterial color={fireColors.flameCore} emissive={fireColors.flameCore} emissiveIntensity={0.8} />
-      </Sphere>
-      <Sphere args={[0.1, 16, 16]} position={[0.2, 2.6, -0.3]} scale={[0.7, 1.0, 0.7]}>
-        <meshStandardMaterial color={fireColors.flameCore} emissive={fireColors.flameCore} emissiveIntensity={0.8} />
-      </Sphere>
-      
-      {/* Fire glow effect */}
-      <Sphere args={[1.8, 16, 16]} position={[0, 0.5, 0]}>
-        <meshStandardMaterial color={fireColors.flame} emissive={fireColors.flame} emissiveIntensity={0.2} transparent opacity={0.15} />
+
+      {/* Smile on tap (animated) */}
+      <Sphere ref={mouthRef} args={[0.45, 32, 32]} position={[0, -0.1, 0.75]} scale={[1, 0.0001, 0.0001]}>
+        <meshStandardMaterial color="#FF6B6B" roughness={0.2} metalness={0.1} />
       </Sphere>
     </BasePet>
   );

@@ -18,6 +18,8 @@ const BasePet: React.FC<BasePetProps> = ({ petState, onPetTap, children }) => {
     neutral: 1.0,
     sad: 0.9
   }), []);
+  // Initial overall downscale (10% smaller as requested)
+  const initialScale = 0.9;
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -54,7 +56,7 @@ const BasePet: React.FC<BasePetProps> = ({ petState, onPetTap, children }) => {
     <group 
       ref={groupRef} 
       onClick={handleClick} 
-      scale={moodScale[petState.mood]} 
+      scale={moodScale[petState.mood] * initialScale} 
       position={[0, 0, 0]}
     >
       {children}

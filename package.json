@@ -6,9 +6,25 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc --noEmit --skipLibCheck && vite build",
     "preview": "vite preview",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "test:health": "vitest run src/tests/components/__tests__/healthDataService.test.ts",
+    "test:components": "vitest run src/tests/components/progress/",
+    "test:integration": "vitest run src/tests/integration/",
+    "test:accessibility": "vitest run src/tests/accessibility/",
+    "test:performance": "vitest run src/tests/performance/",
+    "cap:init": "cap init",
+    "cap:add:ios": "cap add ios",
+    "cap:add:android": "cap add android",
+    "cap:sync": "cap sync",
+    "cap:run:ios": "cap run ios",
+    "cap:run:android": "cap run android",
+    "mobile:build": "npm run build && cap sync"
   },
   "repository": {
     "type": "git",
@@ -22,6 +38,9 @@
   },
   "homepage": "https://github.com/Luko248/activegotchi#readme",
   "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",
     "@tailwindcss/postcss": "^4.1.11",
@@ -30,12 +49,29 @@
     "@types/three": "^0.178.0",
     "@vitejs/plugin-react": "^4.6.0",
     "autoprefixer": "^10.4.21",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.536.0",
     "postcss": "^8.5.6",
     "react": "^19.1.0",
+    "react-aria-components": "^1.4.0",
     "react-dom": "^19.1.0",
     "tailwindcss": "^4.1.11",
     "three": "^0.178.0",
     "typescript": "^5.8.3",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "zustand": "^5.0.7"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@vitest/ui": "^3.2.4",
+    "happy-dom": "^18.0.1",
+    "jest-axe": "^10.0.0",
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.4"
   }
 }
