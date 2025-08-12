@@ -4,7 +4,7 @@ import { Mesh, Group } from 'three'
 import { useFrame } from '@react-three/fiber'
 import BasePet, { BasePetProps } from './BasePet'
 
-const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap }) => {
+const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouette = false }) => {
   const bodyRef = useRef<Mesh>(null)
   const headRef = useRef<Mesh>(null)
   const leftEyeRef = useRef<Mesh>(null)
@@ -24,6 +24,9 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap }) => {
   const [isBlinking, setIsBlinking] = useState(false)
   const [lastBlink, setLastBlink] = useState(Date.now())
   const [isSmiling, setIsSmiling] = useState(false)
+  
+  // Pirouette animation state
+  const [pirouetteStartTime, setPirouetteStartTime] = useState<number | null>(null)
   
   // Convert hex color to pastel
   const pastel = (hex: string) => {
@@ -45,6 +48,15 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap }) => {
     white: '#FFFFFF',
     dark: '#2C2C2C'
   }), [basePrimary])
+
+  // Start pirouette when showPirouette becomes true
+  useEffect(() => {
+    if (showPirouette && !pirouetteStartTime) {
+      setPirouetteStartTime(Date.now())
+    } else if (!showPirouette) {
+      setPirouetteStartTime(null)
+    }
+  }, [showPirouette, pirouetteStartTime])
 
   // Blink animation
   useEffect(() => {
@@ -88,9 +100,38 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap }) => {
   useFrame((state) => {
     const time = state.clock.elapsedTime
 
-    // Gentle floating animation
-    if (groupRef.current) {
-      groupRef.current.position.y = Math.sin(time * 0.8) * 0.15
+    // Store the base floating position
+    const baseFloatingY = Math.sin(time * 0.8) * 0.15
+    
+    // Pirouette animation logic
+    if (pirouetteStartTime && groupRef.current) {
+      const elapsed = Date.now() - pirouetteStartTime
+      const duration = 1500 // 1.5 seconds animation
+      
+      if (elapsed < duration) {
+        const progress = elapsed / duration
+        
+        // Jump height with simple sine wave (lower height)
+        const jumpHeight = Math.sin(progress * Math.PI) * 1.2
+        
+        // Pirouette spin (2 full rotations) - ensure it ends at 0
+        const spinRotation = progress * Math.PI * 4
+        
+        // Apply transformations - add jump to base floating
+        groupRef.current.position.y = baseFloatingY + jumpHeight
+        groupRef.current.rotation.y = spinRotation
+      } else {
+        // Animation finished, smoothly return to normal floating
+        groupRef.current.position.y = baseFloatingY
+        groupRef.current.rotation.y = 0
+        setPirouetteStartTime(null)
+      }
+    } else {
+      // Normal gentle floating animation when not doing pirouette
+      if (groupRef.current) {
+        groupRef.current.position.y = baseFloatingY
+        groupRef.current.rotation.y = 0
+      }
     }
 
     // Head bobbing based on mood

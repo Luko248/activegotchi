@@ -45,85 +45,146 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="backdrop-blur-md bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/20 rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full text-gray-800 dark:text-gray-100">
-        {/* Step progress */}
-        <div className="mb-4">
-          <div className="h-2 w-full rounded-full overflow-hidden bg-white/60 dark:bg-white/20">
-            <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-sm" style={{ width: `${progressPct}%` }} />
-          </div>
-          <div className="mt-2 text-xs text-gray-800 dark:text-gray-200 text-center font-medium">Step {step} of {totalSteps}</div>
-        </div>
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-            Welcome to ActiveGotchi
+    <div className="h-[100svh] bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
+      {/* Header - always at top */}
+      <div className="flex-shrink-0 px-4 pt-8 pb-6">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-3">
+            ActiveGotchi
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
             Your fitness companion is ready to meet you!
           </p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Step progress */}
+        <div className="mb-4">
+          <div className="h-3 w-full rounded-full overflow-hidden bg-white/60 dark:bg-white/20 mb-3">
+            <div 
+              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-sm transition-all duration-500 ease-out" 
+              style={{ width: `${progressPct}%` }} 
+            />
+          </div>
+          <div className="text-sm text-gray-800 dark:text-gray-200 text-center font-medium mb-4">Step {step} of {totalSteps}</div>
+        </div>
+        
+        {/* Step titles and descriptions */}
+        <div className="text-center">
           {step === 1 && (
             <div>
-              <label htmlFor="petName" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                Enter your pet's name
-              </label>
-              <input
-                type="text"
-                id="petName"
-                value={petName}
-                onChange={(e) => setPetName(e.target.value)}
-                className="w-full px-4 py-3 backdrop-blur-md bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-800 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                placeholder="What should we call your pet?"
-                required
-              />
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="text-center">
-              <div className="text-sm text-gray-800 dark:text-gray-200 mb-3">Pick a vibe color</div>
-              <div className="flex items-center justify-center mb-3">
-                <div className="w-20 h-20 rounded-full border border-white/60 shadow-inner" style={{ background: primaryColor || '#A5D8FF' }} aria-label="Selected color" />
-              </div>
-              <div className="text-xs text-gray-700 dark:text-gray-300 mb-4">{primaryColor || '#A5D8FF'}</div>
-              <div className="flex justify-center">
-                <button type="button" onClick={handleGenerateColor} className="px-5 py-2 rounded-full bg-black/80 text-white shadow">
-                  Generate
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div>
-              <span className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Avatar mode</span>
-              <RadioGroup aria-label="Avatar mode" value={mode} onChange={(v) => setMode(v as any)} className="flex items-center gap-2 bg-white/20 dark:bg-black/20 border border-white/40 dark:border-white/20 rounded-full p-1">
-                <Radio value="mortal" className={({ isSelected }) => `flex-1 text-center px-4 py-2 rounded-full text-sm cursor-pointer outline-none focus:ring-2 focus:ring-blue-500 ${isSelected ? 'bg-black/80 text-white' : 'text-gray-800 dark:text-gray-200'}`}>
-                  Mortal (5 lives)
-                </Radio>
-                <Radio value="immortal" className={({ isSelected }) => `flex-1 text-center px-4 py-2 rounded-full text-sm cursor-pointer outline-none focus:ring-2 focus:ring-blue-500 ${isSelected ? 'bg-black/80 text-white' : 'text-gray-800 dark:text-gray-200'}`}>
-                  Immortal
-                </Radio>
-              </RadioGroup>
-              <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
-                {mode==='mortal' ? 'Miss all daily goals and you lose a life. At 0 lives, adopt a new avatar.' : 'Uses your real Apple Health data. Never dies; mood reflects fatigue.'}
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3 mt-12">
+                What's your pet's name?
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-balance leading-relaxed">
+                Choose a name that will motivate you on your fitness journey
               </p>
             </div>
           )}
-          
-          <div className="flex gap-2">
+          {step === 2 && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3 mt-12">
+                Pick your pet's color
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-balance leading-relaxed">
+                This will be your pet's unique personality color
+              </p>
+            </div>
+          )}
+          {step === 3 && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3 mt-12">
+                Choose your challenge level
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-balance leading-relaxed">
+                Mortal mode adds stakes with limited lives, while immortal mode focuses on mood and progress without consequences
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content area - grows to fill available space */}
+      <div className="flex-1 px-4 flex flex-col justify-start">
+        {step === 1 && (
+          <input
+            type="text"
+            id="petName"
+            value={petName}
+            onChange={(e) => setPetName(e.target.value)}
+            className="w-full px-6 py-4 text-lg backdrop-blur-md bg-white/50 dark:bg-black/40 border border-white/50 dark:border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-800 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-center font-medium"
+            placeholder="Enter your pet's name"
+            required
+          />
+        )}
+
+        {step === 2 && (
+          <div className="text-center space-y-8">
+            <div className="flex items-center justify-center">
+              <div 
+                className="w-24 h-24 rounded-full border-4 border-white/80 shadow-xl transition-all duration-300 hover:scale-105" 
+                style={{ background: primaryColor || '#A5D8FF' }} 
+                aria-label="Selected color" 
+              />
+            </div>
+            <button 
+              type="button" 
+              onClick={handleGenerateColor} 
+              className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+            >
+              Generate New Color
+            </button>
+          </div>
+        )}
+
+        {step === 3 && (
+          <form onSubmit={handleSubmit}>
+            <RadioGroup 
+              aria-label="Avatar mode" 
+              value={mode} 
+              onChange={(v) => setMode(v as any)} 
+              className="space-y-4"
+            >
+              <Radio 
+                value="mortal" 
+                className={({ isSelected }) => `block w-full p-4 rounded-xl border-2 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-white/40 dark:border-white/20 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30'}`}
+              >
+                <div className="text-left">
+                  <div className="font-semibold text-gray-800 dark:text-gray-100">🔥 Mortal Mode</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">5 lives • High stakes challenge</div>
+                </div>
+              </Radio>
+              <Radio 
+                value="immortal" 
+                className={({ isSelected }) => `block w-full p-4 rounded-xl border-2 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-white/40 dark:border-white/20 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30'}`}
+              >
+                <div className="text-left">
+                  <div className="font-semibold text-gray-800 dark:text-gray-100">✨ Immortal Mode</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Endless journey • Mood-based feedback</div>
+                </div>
+              </Radio>
+            </RadioGroup>
+          </form>
+        )}
+      </div>
+      
+      {/* Buttons - always at bottom */}
+      <div className="flex-shrink-0 px-4 pb-8 pt-6">
+        <form onSubmit={handleSubmit}>
+          <div className="flex gap-4">
             {step > 1 && (
-              <button type="button" onClick={() => setStep(step-1)} className="flex-1 bg-white/30 dark:bg-black/30 text-gray-800 dark:text-gray-100 font-semibold py-3 px-6 rounded-lg">
+              <button 
+                type="button" 
+                onClick={() => setStep(step-1)} 
+                className="flex-1 bg-white/40 dark:bg-black/40 text-gray-800 dark:text-gray-100 font-semibold py-4 px-6 rounded-xl hover:bg-white/50 dark:hover:bg-black/50 transition-all duration-200 border border-white/40 dark:border-white/20"
+              >
                 Back
               </button>
             )}
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              {step === totalSteps ? "Let's Start!" : 'Next'}
+              {step === totalSteps ? "🚀 Let's Start!" : 'Next →'}
             </button>
           </div>
         </form>

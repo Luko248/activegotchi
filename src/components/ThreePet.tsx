@@ -9,6 +9,7 @@ interface ThreePetProps {
   petState?: PetState;
   onPetTap?: () => void;
   cameraZ?: number; // allow callers to zoom out a bit
+  showPirouette?: boolean;
 }
 
 // Loading component for 3D avatar
@@ -26,6 +27,7 @@ export const ThreePet: React.FC<ThreePetProps> = ({
   },
   onPetTap = () => {},
   cameraZ,
+  showPirouette = false,
 }) => {
   return (
     <div
@@ -34,7 +36,7 @@ export const ThreePet: React.FC<ThreePetProps> = ({
     >
       <Canvas
         style={{ height: "100%", width: "100%", background: 'transparent' }}
-        camera={{ position: [0, 1.2, cameraZ ?? 5.0], fov: 50 }}
+        camera={{ position: [0, 1.2, cameraZ ?? 8.0], fov: 50 }}
         gl={{ 
           antialias: true, 
           alpha: true, 
@@ -93,7 +95,7 @@ export const ThreePet: React.FC<ThreePetProps> = ({
         </Plane>
 
         <Suspense fallback={<AvatarFallback />}>
-          <PetFactory petState={petState} onPetTap={onPetTap} />
+          <PetFactory petState={petState} onPetTap={onPetTap} showPirouette={showPirouette} />
         </Suspense>
 
         <OrbitControls

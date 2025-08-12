@@ -6,12 +6,13 @@ import CuteAvatarPet from './CuteAvatarPet';
 interface PetFactoryProps {
   petState: PetState;
   onPetTap: () => void;
+  showPirouette?: boolean;
 }
 
 /**
  * PetFactory selects the appropriate pet model based on mood and other state factors
  */
-const PetFactory: React.FC<PetFactoryProps> = ({ petState, onPetTap }) => {
+const PetFactory: React.FC<PetFactoryProps> = ({ petState, onPetTap, showPirouette = false }) => {
   // Use the new cute avatar by default, with fallback to ball pet
   const PetComponent = useMemo(() => {
     // Check if we have color information - if so, use the cute avatar
@@ -23,7 +24,7 @@ const PetFactory: React.FC<PetFactoryProps> = ({ petState, onPetTap }) => {
     return BallPet;
   }, [petState.primaryColor]);
 
-  return <PetComponent petState={petState} onPetTap={onPetTap} />;
+  return <PetComponent petState={petState} onPetTap={onPetTap} showPirouette={showPirouette} />;
 };
 
 export default PetFactory;

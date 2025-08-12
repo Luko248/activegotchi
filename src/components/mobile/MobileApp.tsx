@@ -157,30 +157,36 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
 
       {/* Debug panel (dev only) */}
       {import.meta.env.MODE !== 'production' && debugOpen && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="mt-2 p-3 rounded-2xl backdrop-blur bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/10 shadow-lg w-64">
-            <div className="text-xs text-gray-800 dark:text-gray-100 mb-2 font-semibold">Pet Controls</div>
-            <div className="space-y-2">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="p-4 rounded-2xl backdrop-blur bg-white/90 dark:bg-black/80 border border-white/40 dark:border-white/20 shadow-xl w-80 max-w-[90vw]">
+            <div className="text-sm text-gray-800 dark:text-gray-100 mb-3 font-semibold">Pet Controls</div>
+            <div className="space-y-3">
               <input
                 value={debugName}
                 onChange={(e) => setDebugName(e.target.value)}
                 placeholder="Pet name"
-                className="w-full px-2 py-1.5 text-sm rounded-md bg-white/60 dark:bg-black/40 border border-white/40 dark:border-white/10 text-gray-800 dark:text-gray-100 placeholder-gray-500"
+                className="w-full px-3 py-2 text-sm rounded-md bg-white/80 dark:bg-black/60 border border-white/40 dark:border-white/20 text-gray-800 dark:text-gray-100 placeholder-gray-500"
               />
               <div className="flex gap-2">
                 <button
                   onClick={handleDebugSetName}
-                  className="flex-1 px-2 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                  className="flex-1 px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700"
                 >
                   Set Name
                 </button>
                 <button
                   onClick={handleDebugReset}
-                  className="flex-1 px-2 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
+                  className="flex-1 px-3 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700"
                 >
                   Reset
                 </button>
               </div>
+              <button
+                onClick={() => setDebugOpen(false)}
+                className="w-full px-3 py-2 text-sm rounded-md bg-gray-600 text-white hover:bg-gray-700"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

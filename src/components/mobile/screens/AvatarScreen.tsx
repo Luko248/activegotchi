@@ -20,6 +20,43 @@ interface AvatarScreenProps {
 export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, onToggleDebug, debugOpen, onOpenMap }) => {
   const petMeta = usePetStore(s => s.pet)
   const [arOpen, setArOpen] = useState(false)
+  const [tapCount, setTapCount] = useState(0)
+  const [showPirouette, setShowPirouette] = useState(false)
+  const tapTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  const handlePetTap = () => {
+    // Don't process new taps if pirouette is already running
+    if (showPirouette) {
+      return
+    }
+
+    // Clear existing timeout
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current)
+    }
+
+    const newTapCount = tapCount + 1
+    setTapCount(newTapCount)
+
+    // If we hit 3 taps, trigger pirouette
+    if (newTapCount >= 3) {
+      setShowPirouette(true)
+      setTapCount(0)
+      
+      // Reset pirouette after animation
+      setTimeout(() => {
+        setShowPirouette(false)
+      }, 1500) // Match animation duration
+    } else {
+      // Reset tap count after 800ms if no more taps
+      tapTimeoutRef.current = setTimeout(() => {
+        setTapCount(0)
+      }, 800)
+    }
+
+    // Call original onPetTap
+    onPetTap()
+  }
   return (
     <div className="h-full w-full relative overflow-hidden">
       {/* Unified animated background */}
@@ -44,7 +81,7 @@ export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, 
         )}
       </div>
       <div className="relative z-10">
-        <ThreePet petState={petState} onPetTap={onPetTap} />
+        <ThreePet petState={petState} onPetTap={handlePetTap} showPirouette={showPirouette} />
       </div>
 
       {/* Top-left: heart lives only */}
@@ -52,7 +89,7 @@ export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, 
         <div className="absolute top-4 left-4 z-50 select-none">
           <div className="relative flex items-center justify-center">
             <Heart 
-              className="w-9 h-9 animate-heartbeat text-red-500"
+              className="w-9 h-9 animate-heartbeat text-rose-500"
               fill="currentColor"
               style={{
                 filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
