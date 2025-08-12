@@ -6,6 +6,7 @@ import { usePetStore } from '../../../store/petStore'
 import { IconButton } from '../IconButton'
 import AROverlay from '../AROverlay'
 import { triggerLightHaptic } from '../../../services/haptics'
+import { AnimatedBackground } from '../AnimatedBackground'
 
 interface AvatarScreenProps {
   petState: PetState
@@ -21,14 +22,14 @@ export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, 
   const [arOpen, setArOpen] = useState(false)
   return (
     <div className="h-full w-full relative overflow-hidden">
-      {/* Glass morphism background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/70 via-purple-50/50 to-pink-50/70 dark:from-gray-900/70 dark:via-gray-800/50 dark:to-gray-900/70 backdrop-blur-lg" />
+      {/* Unified animated background */}
+      <AnimatedBackground />
       {/* Header overlay: centered pet name and mood */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 select-none text-center pointer-events-none">
-        <div className="text-base font-semibold text-gray-900 dark:text-gray-100">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 select-none text-center pointer-events-none">
+        <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           {petState.name || 'Your Pet Name'}
         </div>
-        <div className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+        <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           {petState.mood === 'happy' ? 'Feeling great' : petState.mood === 'sad' ? 'Needs encouragement' : 'Feeling okay'}
         </div>
         {import.meta.env.MODE !== 'production' && (
@@ -42,11 +43,13 @@ export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, 
           </div>
         )}
       </div>
-      <ThreePet petState={petState} onPetTap={onPetTap} />
+      <div className="relative z-10">
+        <ThreePet petState={petState} onPetTap={onPetTap} />
+      </div>
 
       {/* Top-left: heart lives only */}
       {petMeta?.mode === 'mortal' && (
-        <div className="absolute top-6 left-6 z-50 select-none">
+        <div className="absolute top-4 left-4 z-50 select-none">
           <div className="relative flex items-center justify-center">
             <Heart 
               className="w-9 h-9 animate-heartbeat text-red-500"
@@ -63,7 +66,7 @@ export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, 
       )}
 
       {/* Top-right controls: map and AR buttons */}
-      <div className="absolute top-6 right-6 z-50 select-none flex flex-col items-center gap-3">
+      <div className="absolute top-4 right-4 z-50 select-none flex flex-col items-center gap-3">
         {/* Map button */}
         {onOpenMap && (
           <IconButton 

@@ -1,6 +1,8 @@
 import React from 'react'
 import { DuoPathMap } from '../../progress/DuoPathMap'
 import { motion } from 'framer-motion'
+import { ArrowLeft } from 'lucide-react'
+import { IconButton } from '../IconButton'
 
 interface MapScreenProps {
   onBack?: () => void
@@ -43,14 +45,12 @@ export const MapScreen: React.FC<MapScreenProps> = ({ onBack }) => {
       </div>
 
       {/* Back button (absolute top-left) */}
-      <div className="absolute top-6 left-6 z-20">
-        <button
+      <div className="absolute top-4 left-4 z-20">
+        <IconButton 
+          icon={ArrowLeft}
           onClick={() => onBack?.()}
           aria-label="Back to pet"
-          className="w-10 h-10 rounded-full bg-black/80 text-white grid place-items-center shadow-lg border border-white/20"
-        >
-          ←
-        </button>
+        />
       </div>
 
       <div className="relative z-10 h-full grid grid-rows-[auto_1fr] min-h-0">
