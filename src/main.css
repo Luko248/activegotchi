@@ -42,3 +42,23 @@ select,
 textarea {
   font-size: 16px;
 }
+
+/* Heartbeat animation */
+@keyframes heartbeat {
+  0%, 100% {
+    scale: 1;
+  }
+  25% {
+    scale: 1.1;
+  }
+  50% {
+    scale: 1;
+  }
+  75% {
+    scale: 1.05;
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}

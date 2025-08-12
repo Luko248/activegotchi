@@ -259,13 +259,13 @@ export const DuoPathMap: React.FC<DuoPathMapProps> = ({ className = '' }) => {
             return (
               <div key={week.weekStart} className="w-full flex flex-col justify-center py-12 px-3 @[420px]:py-16 @[420px]:px-4">
                 <div className="relative max-w-md mx-auto flex-shrink-0">
-                  {/* Week header */}
-                  <div className="text-center mb-8">
+                  {/* Week header - sticky */}
+                  <div className="sticky -top-4 z-30 text-center mb-8 pt-4">
                     <motion.div 
-                      className={`inline-block backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border ${
+                      className={`inline-block backdrop-blur-md px-4 py-3 rounded-xl shadow-lg border ${
                         isCurrentWeek 
-                          ? 'bg-gradient-to-r from-blue-400/20 to-purple-400/20 border-blue-300/40 dark:from-blue-500/20 dark:to-purple-500/20 dark:border-blue-400/40'
-                          : 'bg-white/15 dark:bg-black/15 border-white/20 dark:border-white/10'
+                          ? 'bg-gradient-to-r from-blue-400/30 to-purple-400/30 border-blue-300/50 dark:from-blue-500/30 dark:to-purple-500/30 dark:border-blue-400/50'
+                          : 'bg-white/25 dark:bg-black/25 border-white/30 dark:border-white/15'
                       }`}
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}

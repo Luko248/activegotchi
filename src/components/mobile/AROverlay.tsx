@@ -6,6 +6,7 @@ import { isAndroid, isIOS, isWebXRAvailable } from '../../services/platform';
 import { arConfig } from '../../services/arConfig';
 import { usePetStore } from '../../store/petStore';
 import { buildAndroidSceneViewerUrl, getArAssetForPet } from '../../services/arAssets';
+import { CloseButton } from './CloseButton';
 
 interface AROverlayProps {
   open: boolean;
@@ -120,13 +121,7 @@ const AROverlay: React.FC<AROverlayProps> = ({ open, onClose }) => {
       {/* Controls overlay */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-6 right-6 z-10 pointer-events-auto">
-          <button
-            onClick={handleClose}
-            className="w-10 h-10 rounded-full bg-black/80 text-white grid place-items-center shadow-lg border border-white/20"
-            aria-label="Close AR"
-          >
-            ✕
-          </button>
+          <CloseButton onClick={handleClose} className="bg-black/80 text-white border border-white/20 shadow-lg" />
         </div>
 
         {/* Bottom controls before AR starts */}

@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
 import { HealthData } from "../../types";
+import { CloseButton } from "./CloseButton";
 
 interface StatsSheetProps {
   onClose: () => void;
@@ -53,13 +53,7 @@ export const StatsSheet: React.FC<StatsSheetProps> = ({
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Today's Activity
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="Close stats"
-          >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
+          <CloseButton onClick={onClose} />
         </div>
 
         {/* Content */}

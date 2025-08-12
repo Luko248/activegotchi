@@ -1,15 +1,12 @@
 import React from 'react'
 import { DuoPathMap } from '../../progress/DuoPathMap'
 import { motion } from 'framer-motion'
-import AROverlay from '../AROverlay'
-import { triggerLightHaptic } from '../../../services/haptics'
 
 interface MapScreenProps {
   onBack?: () => void
 }
 
 export const MapScreen: React.FC<MapScreenProps> = ({ onBack }) => {
-  const [arOpen, setArOpen] = React.useState(false)
   return (
     <div className="h-full w-full relative">
       {/* Glass morphism background */}
@@ -75,24 +72,6 @@ export const MapScreen: React.FC<MapScreenProps> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Floating AR button bottom-left */}
-      <div className="absolute bottom-8 left-6 z-20">
-        <button
-          onClick={() => { triggerLightHaptic(); setArOpen(true) }}
-          aria-label="Open AR"
-          className="w-12 h-12 rounded-full bg-black/80 text-white grid place-items-center shadow-xl border border-white/20"
-        >
-          {/* AR icon (cube) */}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-            <path d="M3.27 6.96 12 12l8.73-5.04" />
-            <path d="M12 22V12" />
-          </svg>
-        </button>
-      </div>
-
-      {/* AR Overlay */}
-      <AROverlay open={arOpen} onClose={() => setArOpen(false)} />
     </div>
   )
 }

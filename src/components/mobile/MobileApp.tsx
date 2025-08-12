@@ -11,7 +11,6 @@ import { StatsSheet } from "./StatsSheet";
 import BottomProgressPeek from "./BottomProgressPeek";
 import { usePetStore } from "../../store/petStore";
 import usePetLifecycle from "../../hooks/usePetLifecycle";
-import { BarChart3, Map as MapIcon } from "lucide-react";
 
 interface MobileAppProps {
   petName: string;
@@ -132,7 +131,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
         return <MapScreen onBack={() => setActive('avatar')} />
       case 'avatar':
       default:
-        return <AvatarScreen petState={petState} onPetTap={handlePetTap} heartLevel={heartLevel} onToggleDebug={() => setDebugOpen((v) => !v)} debugOpen={debugOpen} />
+        return <AvatarScreen petState={petState} onPetTap={handlePetTap} heartLevel={heartLevel} onToggleDebug={() => setDebugOpen((v) => !v)} debugOpen={debugOpen} onOpenMap={() => setActive('map')} />
     }
   }
 
@@ -153,32 +152,6 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
         </AnimatePresence>
       </div>
 
-      {/* Floating Actions per Figma layout */}
-      {active !== 'map' && (
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Top bar: left stats button, centered name, right heart shown inside AvatarScreen */}
-          <div className="absolute top-6 left-6 z-40 pointer-events-auto">
-            <button
-              onClick={() => setStatsOpen(true)}
-              aria-label="Show stats"
-              className="w-10 h-10 rounded-full bg-white/30 dark:bg-black/30 backdrop-blur border border-white/20 text-white grid place-items-center shadow-lg"
-            >
-              <BarChart3 className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Floating Map button (bottom-right) */}
-          <div className="absolute bottom-8 right-6 z-40 pointer-events-auto">
-            <button
-              onClick={() => setActive('map')}
-              aria-label="Open map"
-              className="w-12 h-12 rounded-full bg-white/30 dark:bg-black/30 backdrop-blur text-white grid place-items-center shadow-xl border border-white/20"
-            >
-              <MapIcon className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Back button moved inside MapScreen */}
 
@@ -216,7 +189,10 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
       {/* Stats bottom sheet overlay */}
       <AnimatePresence>
         {statsOpen && (
-          <StatsSheet onClose={() => setStatsOpen(false)} healthData={healthData} />
+          <StatsSheet 
+            onClose={() => setStatsOpen(false)} 
+            healthData={healthData}
+          />
         )}
       </AnimatePresence>
 

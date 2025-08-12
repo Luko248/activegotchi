@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ThreePet } from '../../ThreePet'
 import { PetState } from '../../../types'
-import { Heart } from 'lucide-react'
+import { Map as MapIcon, Heart, Box } from 'lucide-react'
 import { usePetStore } from '../../../store/petStore'
+import { IconButton } from '../IconButton'
+import AROverlay from '../AROverlay'
+import { triggerLightHaptic } from '../../../services/haptics'
 
 interface AvatarScreenProps {
   petState: PetState
@@ -10,10 +13,12 @@ interface AvatarScreenProps {
   heartLevel?: number // 0-100 average progress used as affection
   onToggleDebug?: () => void
   debugOpen?: boolean
+  onOpenMap?: () => void
 }
 
-export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, onToggleDebug, debugOpen }) => {
+export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, onToggleDebug, debugOpen, onOpenMap }) => {
   const petMeta = usePetStore(s => s.pet)
+  const [arOpen, setArOpen] = useState(false)
   return (
     <div className="h-full w-full relative overflow-hidden">
       {/* Glass morphism background */}
@@ -39,16 +44,46 @@ export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, 
       </div>
       <ThreePet petState={petState} onPetTap={onPetTap} />
 
-      {/* Top-right lives (mortal only) */}
+      {/* Top-left: heart lives only */}
       {petMeta?.mode === 'mortal' && (
-        <div className="absolute top-6 right-6 z-50 select-none">
-          <div className="backdrop-blur-md bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/20 rounded-full shadow-lg px-3 py-1.5 flex items-center gap-1.5">
-            <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-            <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{petMeta.livesRemaining ?? 0}</span>
+        <div className="absolute top-6 left-6 z-50 select-none">
+          <div className="relative flex items-center justify-center">
+            <Heart 
+              className="w-9 h-9 animate-heartbeat text-red-500"
+              fill="currentColor"
+              style={{
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+              }}
+            />
+            <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white drop-shadow-md">
+              {petMeta.livesRemaining ?? 0}
+            </span>
           </div>
         </div>
       )}
+
+      {/* Top-right controls: map and AR buttons */}
+      <div className="absolute top-6 right-6 z-50 select-none flex flex-col items-center gap-3">
+        {/* Map button */}
+        {onOpenMap && (
+          <IconButton 
+            icon={MapIcon}
+            onClick={onOpenMap}
+            aria-label="Open map"
+          />
+        )}
+        
+        {/* AR button */}
+        <IconButton 
+          icon={Box}
+          onClick={() => { triggerLightHaptic(); setArOpen(true) }}
+          aria-label="Open AR"
+        />
+      </div>
       {/* Peek sheet handled globally in MobileApp */}
+      
+      {/* AR Overlay */}
+      <AROverlay open={arOpen} onClose={() => setArOpen(false)} />
     </div>
   )
 }
