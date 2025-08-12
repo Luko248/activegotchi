@@ -8,8 +8,10 @@ import AvatarScreen from "./screens/AvatarScreen";
 import StatsScreen from "./screens/StatsScreen";
 import MapScreen from "./screens/MapScreen";
 import { StatsSheet } from "./StatsSheet";
+import BottomProgressPeek from "./BottomProgressPeek";
 import { usePetStore } from "../../store/petStore";
 import usePetLifecycle from "../../hooks/usePetLifecycle";
+import { BarChart3, Map as MapIcon } from "lucide-react";
 
 interface MobileAppProps {
   petName: string;
@@ -28,6 +30,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
   const [petState, setPetState] = useState<PetState>({
     name: petName,
     mood: "neutral",
+    primaryColor: '#7CC6FF', // Default pastel blue
   });
 
   const healthService = HealthDataService.getInstance();
@@ -71,7 +74,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
     setPetState((prev) => ({
       ...prev,
       name: petMeta?.name ?? prev.name,
-      primaryColor: petMeta?.primaryColor ?? prev.primaryColor,
+      primaryColor: petMeta?.primaryColor ?? prev.primaryColor ?? '#7CC6FF', // Always ensure a color
       mode: petMeta?.mode ?? prev.mode,
       livesRemaining: petMeta?.livesRemaining ?? prev.livesRemaining,
     }))
@@ -126,15 +129,15 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
       case 'stats':
         return <StatsScreen healthData={healthData} />
       case 'map':
-        return <MapScreen />
+        return <MapScreen onBack={() => setActive('avatar')} />
       case 'avatar':
       default:
-        return <AvatarScreen petState={petState} onPetTap={handlePetTap} heartLevel={heartLevel} />
+        return <AvatarScreen petState={petState} onPetTap={handlePetTap} heartLevel={heartLevel} onToggleDebug={() => setDebugOpen((v) => !v)} debugOpen={debugOpen} />
     }
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden">
+    <div className="h-full w-full overflow-hidden">
       <div className="absolute inset-0">
         <AnimatePresence mode="wait">
           <motion.div
@@ -158,9 +161,9 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
             <button
               onClick={() => setStatsOpen(true)}
               aria-label="Show stats"
-              className="w-10 h-10 rounded-full bg-black/80 text-white grid place-items-center shadow-lg"
+              className="w-10 h-10 rounded-full bg-white/30 dark:bg-black/30 backdrop-blur border border-white/20 text-white grid place-items-center shadow-lg"
             >
-              <span className="text-sm">≡</span>
+              <BarChart3 className="w-5 h-5" />
             </button>
           </div>
 
@@ -169,69 +172,43 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
             <button
               onClick={() => setActive('map')}
               aria-label="Open map"
-              className="w-12 h-12 rounded-full bg-black/80 text-white grid place-items-center shadow-xl border border-white/20"
+              className="w-12 h-12 rounded-full bg-white/30 dark:bg-black/30 backdrop-blur text-white grid place-items-center shadow-xl border border-white/20"
             >
-              {/* simple map glyph */}
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"></polygon>
-                <line x1="9" y1="3" x2="9" y2="18"></line>
-                <line x1="15" y1="6" x2="15" y2="21"></line>
-              </svg>
+              <MapIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Map back control */}
-      {active === 'map' && (
-        <div className="absolute top-6 left-6 z-40">
-          <button
-            onClick={() => setActive('avatar')}
-            aria-label="Back to pet"
-            className="w-10 h-10 rounded-full bg-black/80 text-white grid place-items-center shadow-lg"
-          >
-            ←
-          </button>
-        </div>
-      )}
+      {/* Back button moved inside MapScreen */}
 
-      {/* Debug buttons (dev only, moved to bottom-center) */}
-      {import.meta.env.MODE !== 'production' && (
+      {/* Debug panel (dev only) */}
+      {import.meta.env.MODE !== 'production' && debugOpen && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="flex flex-col items-center">
-            <button
-              onClick={() => setDebugOpen((v) => !v)}
-              className="px-3 py-1.5 text-xs rounded-full bg-black/60 text-white backdrop-blur border border-white/20"
-            >
-              {debugOpen ? 'Close Debug' : 'Debug'}
-            </button>
-            {debugOpen && (
-              <div className="mt-2 p-3 rounded-2xl backdrop-blur bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/10 shadow-lg w-64">
-                <div className="text-xs text-gray-800 dark:text-gray-100 mb-2 font-semibold">Pet Controls</div>
-                <div className="space-y-2">
-                  <input
-                    value={debugName}
-                    onChange={(e) => setDebugName(e.target.value)}
-                    placeholder="Pet name"
-                    className="w-full px-2 py-1.5 text-sm rounded-md bg-white/60 dark:bg-black/40 border border-white/40 dark:border-white/10 text-gray-800 dark:text-gray-100 placeholder-gray-500"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleDebugSetName}
-                      className="flex-1 px-2 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                      Set Name
-                    </button>
-                    <button
-                      onClick={handleDebugReset}
-                      className="flex-1 px-2 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                </div>
+          <div className="mt-2 p-3 rounded-2xl backdrop-blur bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/10 shadow-lg w-64">
+            <div className="text-xs text-gray-800 dark:text-gray-100 mb-2 font-semibold">Pet Controls</div>
+            <div className="space-y-2">
+              <input
+                value={debugName}
+                onChange={(e) => setDebugName(e.target.value)}
+                placeholder="Pet name"
+                className="w-full px-2 py-1.5 text-sm rounded-md bg-white/60 dark:bg-black/40 border border-white/40 dark:border-white/10 text-gray-800 dark:text-gray-100 placeholder-gray-500"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDebugSetName}
+                  className="flex-1 px-2 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Set Name
+                </button>
+                <button
+                  onClick={handleDebugReset}
+                  className="flex-1 px-2 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
+                >
+                  Reset
+                </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}
@@ -242,6 +219,11 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
           <StatsSheet onClose={() => setStatsOpen(false)} healthData={healthData} />
         )}
       </AnimatePresence>
+
+      {/* Bottom progress peek to drag up and open stats */}
+      {active === 'avatar' && !statsOpen && (
+        <BottomProgressPeek healthData={healthData} onExpand={() => setStatsOpen(true)} />
+      )}
     </div>
   );
 };

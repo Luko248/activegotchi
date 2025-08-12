@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, ReactNode } from 'react';
+import React, { useRef, useMemo, ReactNode, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import { PetState } from '../../../../types';
@@ -12,52 +12,75 @@ export interface BasePetProps {
 const BasePet: React.FC<BasePetProps> = ({ petState, onPetTap, children }) => {
   const groupRef = useRef<Group>(null);
   const headRef = useRef<Mesh>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const moodScale = useMemo(() => ({
-    happy: 1.1,
+    happy: 1.05,
     neutral: 1.0,
-    sad: 0.9
+    sad: 0.95,
+    sleepy: 0.98
   }), []);
-  // Initial overall downscale (10% smaller as requested)
-  const initialScale = 0.9;
+  
+  // Smaller initial scale for better proportions
+  const initialScale = 0.8;
+
+  // Ensure avatar is properly initialized
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialized(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useFrame((state) => {
-    if (groupRef.current) {
-      // Gentle floating animation
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
-      
-      // Mood-based rotation
-      if (petState.mood === 'happy') {
-        groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
-      }
+    if (!isInitialized || !groupRef.current) return;
+
+    const time = state.clock.elapsedTime;
+    
+    // Gentle floating animation based on mood
+    const floatSpeed = petState.mood === 'happy' ? 0.8 : petState.mood === 'sad' ? 0.3 : 0.5;
+    const floatAmount = petState.mood === 'happy' ? 0.12 : petState.mood === 'sad' ? 0.05 : 0.08;
+    groupRef.current.position.y = Math.sin(time * floatSpeed) * floatAmount;
+    
+    // Subtle mood-based rotation
+    if (petState.mood === 'happy') {
+      groupRef.current.rotation.y = Math.sin(time * 1.5) * 0.08;
+    } else if (petState.mood === 'sleepy') {
+      // Gentle swaying for sleepy mood
+      groupRef.current.rotation.z = Math.sin(time * 0.8) * 0.05;
     }
 
     if (headRef.current) {
       // Head bobbing based on mood
-      const bobSpeed = petState.mood === 'happy' ? 4 : petState.mood === 'sad' ? 1 : 2;
-      headRef.current.position.y = 1.3 + Math.sin(state.clock.elapsedTime * bobSpeed) * 0.08;
+      const bobSpeed = petState.mood === 'happy' ? 3 : petState.mood === 'sad' ? 0.8 : petState.mood === 'sleepy' ? 0.5 : 2;
+      const bobAmount = petState.mood === 'happy' ? 0.1 : petState.mood === 'sad' ? 0.03 : 0.06;
+      headRef.current.position.y = 1.3 + Math.sin(time * bobSpeed) * bobAmount;
     }
   });
 
   const handleClick = () => {
     onPetTap();
     // Add bounce animation on click
-    if (groupRef.current) {
-      groupRef.current.scale.set(1.2, 1.2, 1.2);
+    if (groupRef.current && isInitialized) {
+      const currentScale = moodScale[petState.mood as keyof typeof moodScale] * initialScale;
+      groupRef.current.scale.set(currentScale * 1.15, currentScale * 1.15, currentScale * 1.15);
       setTimeout(() => {
         if (groupRef.current) {
-          groupRef.current.scale.set(1, 1, 1);
+          groupRef.current.scale.set(currentScale, currentScale, currentScale);
         }
       }, 200);
     }
   };
 
+  const currentScale = moodScale[petState.mood as keyof typeof moodScale] * initialScale;
+
   return (
     <group 
       ref={groupRef} 
       onClick={handleClick} 
-      scale={moodScale[petState.mood] * initialScale} 
+      scale={currentScale}
       position={[0, 0, 0]}
+      visible={isInitialized}
     >
       {children}
     </group>

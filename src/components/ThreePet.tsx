@@ -1,13 +1,23 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Plane } from "@react-three/drei";
 import { PetState } from "../types";
 import PetFactory from "./3d/models/pets/PetFactory";
+import * as THREE from "three";
 
 interface ThreePetProps {
   petState?: PetState;
   onPetTap?: () => void;
+  cameraZ?: number; // allow callers to zoom out a bit
 }
+
+// Loading component for 3D avatar
+const AvatarFallback = () => (
+  <mesh position={[0, 0, 0]}>
+    <sphereGeometry args={[0.8, 32, 32]} />
+    <meshStandardMaterial color="#E5E5E5" transparent opacity={0.6} />
+  </mesh>
+);
 
 export const ThreePet: React.FC<ThreePetProps> = ({
   petState = {
@@ -15,6 +25,7 @@ export const ThreePet: React.FC<ThreePetProps> = ({
     name: "ActiveGotchi",
   },
   onPetTap = () => {},
+  cameraZ,
 }) => {
   return (
     <div
@@ -22,33 +33,89 @@ export const ThreePet: React.FC<ThreePetProps> = ({
       style={{ height: "100vh", display: "block" }}
     >
       <Canvas
-        style={{ height: "100%", width: "100%" }}
-        camera={{ position: [0, 0.5, 4.2], fov: 60 }}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        style={{ height: "100%", width: "100%", background: 'transparent' }}
+        camera={{ position: [0, 1.2, cameraZ ?? 5.0], fov: 50 }}
+        gl={{ 
+          antialias: true, 
+          alpha: true, 
+          powerPreference: 'high-performance',
+          premultipliedAlpha: false,
+          preserveDrawingBuffer: true
+        }}
+        shadows
         dpr={[1, 2]}
       >
-        {/* Soft global light */}
-        <hemisphereLight intensity={0.6} color={0xffffff} groundColor={0x8899aa} />
-        {/* Key light */}
-        <spotLight position={[6, 8, 6]} angle={0.3} penumbra={1} intensity={1.0} castShadow />
-        {/* Rim light for cute sheen */}
-        <directionalLight position={[-6, 4, -4]} intensity={0.5} />
+        {/* Fixed ambient lighting - doesn't rotate with camera */}
+        <ambientLight intensity={0.4} color={0xffffff} />
+        
+        {/* Fixed key light from top-right - stays in world position */}
+        <directionalLight 
+          position={[5, 8, 3]} 
+          intensity={1.2}
+          color={0xffffff}
+          castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-far={50}
+          shadow-camera-left={-10}
+          shadow-camera-right={10}
+          shadow-camera-top={10}
+          shadow-camera-bottom={-10}
+        />
+        
+        {/* Fill light from opposite side */}
+        <directionalLight 
+          position={[-3, 4, -2]} 
+          intensity={0.5}
+          color={0xfff8e1}
+        />
+        
+        {/* Rim light for cute glow */}
+        <pointLight 
+          position={[0, 3, -4]} 
+          intensity={0.8}
+          color={0xe1f5fe}
+          distance={20}
+        />
 
-        <PetFactory petState={petState} onPetTap={onPetTap} />
+        {/* Ground plane for shadows */}
+        <Plane 
+          args={[20, 20]} 
+          rotation={[-Math.PI / 2, 0, 0]} 
+          position={[0, -2, 0]}
+          receiveShadow
+        >
+          <meshLambertMaterial 
+            color={0xf8f9fa} 
+            transparent 
+            opacity={0.1}
+          />
+        </Plane>
+
+        <Suspense fallback={<AvatarFallback />}>
+          <PetFactory petState={petState} onPetTap={onPetTap} />
+        </Suspense>
 
         <OrbitControls
           enablePan={false}
           enableZoom={true}
-          maxDistance={6}
-          minDistance={2.5}
-          maxPolarAngle={Math.PI / 1.8}
-          minPolarAngle={Math.PI / 4}
+          maxDistance={8}
+          minDistance={3}
+          maxPolarAngle={Math.PI / 1.6}
+          minPolarAngle={Math.PI / 8}
           target={[0, 0, 0]}
           enableDamping={true}
-          dampingFactor={0.05}
+          dampingFactor={0.08}
+          rotateSpeed={0.8}
+          zoomSpeed={1.2}
           touches={{
-            ONE: 2, // TOUCH.ROTATE
-            TWO: 1, // TOUCH.DOLLY_PAN
+            ONE: THREE.TOUCH.ROTATE, // Single finger rotate
+            TWO: THREE.TOUCH.DOLLY_PAN, // Two finger zoom/pan
+          }}
+          mouseButtons={{
+            LEFT: THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.DOLLY,
+            RIGHT: undefined, // Disable pan
           }}
         />
       </Canvas>

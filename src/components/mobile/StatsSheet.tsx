@@ -36,11 +36,15 @@ export const StatsSheet: React.FC<StatsSheetProps> = ({
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="w-full bg-white dark:bg-gray-900 rounded-t-3xl max-h-[80vh] overflow-hidden"
+        className="w-full bg-white/70 backdrop-blur-md dark:bg-black/50 rounded-t-3xl max-h-[80vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(_, info) => { if ((info?.offset?.y ?? 0) > 60 || (info?.velocity?.y ?? 0) > 500) onClose(); }}
       >
         {/* Handle bar */}
-        <div className="flex justify-center pt-4 pb-2">
+        <div className="flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing">
           <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
         </div>
 
