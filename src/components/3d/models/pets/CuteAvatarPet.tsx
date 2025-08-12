@@ -24,9 +24,14 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
   const [isBlinking, setIsBlinking] = useState(false)
   const [lastBlink, setLastBlink] = useState(Date.now())
   const [isSmiling, setIsSmiling] = useState(false)
+  const [isExcited, setIsExcited] = useState(false)
+  const [lastMoodChange, setLastMoodChange] = useState(Date.now())
   
   // Pirouette animation state
   const [pirouetteStartTime, setPirouetteStartTime] = useState<number | null>(null)
+  
+  // Enhanced reactions
+  const [celebrationTime, setCelebrationTime] = useState<number | null>(null)
   
   // Convert hex color to pastel
   const pastel = (hex: string) => {
@@ -71,11 +76,22 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
     return () => clearInterval(blinkInterval)
   }, [lastBlink])
 
-  // Smile based on mood
+  // Enhanced mood reactions
   useEffect(() => {
     const shouldSmile = petState.mood === 'happy' || isSmiling
     setIsSmiling(shouldSmile)
-  }, [petState.mood])
+    
+    // Detect mood changes for special animations
+    const now = Date.now()
+    if (now - lastMoodChange > 1000) { // Prevent rapid mood changes
+      if (petState.mood === 'happy' && !isExcited) {
+        setIsExcited(true)
+        setCelebrationTime(now)
+        setTimeout(() => setIsExcited(false), 3000)
+      }
+      setLastMoodChange(now)
+    }
+  }, [petState.mood, isSmiling, isExcited, lastMoodChange])
 
   const EYE_DEPTH = 0.12
   const IRIS_DEPTH = 0.08
@@ -134,17 +150,37 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
       }
     }
 
-    // Head bobbing based on mood
+    // Enhanced head animations based on mood
     if (headRef.current) {
-      const bobSpeed = petState.mood === 'happy' ? 1.5 : petState.mood === 'sad' ? 0.5 : 1
-      const bobAmount = petState.mood === 'happy' ? 0.1 : 0.05
+      let bobSpeed = petState.mood === 'happy' ? 1.5 : petState.mood === 'sad' ? 0.5 : 1
+      let bobAmount = petState.mood === 'happy' ? 0.1 : 0.05
+      
+      
       headRef.current.position.y = 0.8 + Math.sin(time * bobSpeed) * bobAmount
+      
+      // Add subtle head tilting for personality
+      if (petState.mood === 'happy') {
+        headRef.current.rotation.z = Math.sin(time * 0.5) * 0.1
+      } else if (petState.mood === 'sad') {
+        headRef.current.rotation.z = Math.sin(time * 0.3) * 0.05 - 0.1
+      }
     }
 
-    // Body breathing
+    // Enhanced body animations
     if (bodyRef.current) {
-      const breatheAmount = 0.05
-      const breatheSpeed = 1
+      let breatheAmount = 0.05
+      let breatheSpeed = 1
+      
+      // Excited breathing when happy
+      if (petState.mood === 'happy') {
+        breatheAmount = 0.08
+        breatheSpeed = 1.5
+      } else if (petState.mood === 'sad') {
+        breatheAmount = 0.03
+        breatheSpeed = 0.7
+      }
+      
+      
       const scale = 1 + Math.sin(time * breatheSpeed) * breatheAmount
       bodyRef.current.scale.set(scale, scale, scale)
     }
@@ -171,10 +207,29 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
       rightHighlightRef.current.scale.set(1, y, HIGHLIGHT_DEPTH)
     }
 
-    // Pupil movement for life
+    // Enhanced pupil movement with mood-based behavior
     if (leftPupilRef.current && rightPupilRef.current) {
-      const move = 0.02
-      const speed = 0.5
+      let move = 0.02
+      let speed = 0.5
+      
+      // More energetic eye movement when happy
+      if (petState.mood === 'happy') {
+        move = 0.03
+        speed = 0.8
+      } else if (petState.mood === 'sad') {
+        move = 0.01
+        speed = 0.3
+      } else if (petState.mood === 'sleepy') {
+        move = 0.005
+        speed = 0.2
+      }
+      
+      // Celebration sparkle in eyes
+      if (celebrationTime && Date.now() - celebrationTime < 3000) {
+        move *= 1.5
+        speed *= 2
+      }
+      
       const offsetX = Math.sin(time * speed) * move
       const offsetY = Math.cos(time * speed * 0.8) * move
       leftPupilRef.current.position.x = -0.32 + offsetX
@@ -183,6 +238,13 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
       rightPupilRef.current.position.x = 0.32 + offsetX
       rightPupilRef.current.position.y = EYE_Y + offsetY
       rightPupilRef.current.position.z = PUPIL_Z
+    }
+    
+    // Enhanced eye highlight effects
+    if (leftHighlightRef.current && rightHighlightRef.current && petState.mood === 'happy') {
+      const sparkle = 0.6 + Math.sin(time * 4) * 0.4
+      leftHighlightRef.current.material.emissiveIntensity = sparkle
+      rightHighlightRef.current.material.emissiveIntensity = sparkle
     }
 
     // Mouth expression
@@ -383,13 +445,6 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
           </>
         )}
 
-        {/* Ears */}
-        <Box args={[0.15, 0.4, 0.1]} position={[-0.6, 1.1, 0]} rotation={[0, 0, -0.3]} castShadow>
-          <meshStandardMaterial color={colors.secondary} roughness={0.3} />
-        </Box>
-        <Box args={[0.15, 0.4, 0.1]} position={[0.6, 1.1, 0]} rotation={[0, 0, 0.3]} castShadow>
-          <meshStandardMaterial color={colors.secondary} roughness={0.3} />
-        </Box>
 
         {/* Little arms */}
         <Sphere args={[0.25, 32, 32]} position={[-1.2, 0.2, 0]} castShadow>

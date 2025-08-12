@@ -12,6 +12,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   onClick, 
   'aria-label': ariaLabel 
 }) => {
+
   return (
     <button
       onClick={onClick}

@@ -11,13 +11,14 @@ import { AnimatedBackground } from '../AnimatedBackground'
 interface AvatarScreenProps {
   petState: PetState
   onPetTap: () => void
+  onPirouette?: () => void
   heartLevel?: number // 0-100 average progress used as affection
   onToggleDebug?: () => void
   debugOpen?: boolean
   onOpenMap?: () => void
 }
 
-export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, onToggleDebug, debugOpen, onOpenMap }) => {
+export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, onPirouette, onToggleDebug, debugOpen, onOpenMap }) => {
   const petMeta = usePetStore(s => s.pet)
   const [arOpen, setArOpen] = useState(false)
   const [tapCount, setTapCount] = useState(0)
@@ -42,6 +43,9 @@ export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, 
     if (newTapCount >= 3) {
       setShowPirouette(true)
       setTapCount(0)
+      
+      // Track pirouette achievement
+      onPirouette?.()
       
       // Reset pirouette after animation
       setTimeout(() => {

@@ -11,6 +11,9 @@ import { StatsSheet } from "./StatsSheet";
 import BottomProgressPeek from "./BottomProgressPeek";
 import { usePetStore } from "../../store/petStore";
 import usePetLifecycle from "../../hooks/usePetLifecycle";
+import { useAchievementStore } from "../../store/achievementStore";
+import { AchievementNotification } from "../AchievementNotification";
+import { Achievement } from "../../types/achievements";
 
 interface MobileAppProps {
   petName: string;
@@ -40,6 +43,43 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
   const [statsOpen, setStatsOpen] = useState<boolean>(false);
   const petMeta = usePetStore((s) => s.pet);
   const { checkDailyOutcome } = usePetLifecycle();
+  
+  // Achievement system
+  const { 
+    initializeAchievements, 
+    trackPetTap, 
+    trackPirouette, 
+    trackDailyProgress,
+    checkDailyAchievements,
+    markNotificationsSeen 
+  } = useAchievementStore();
+  const [currentNotification, setCurrentNotification] = useState<Achievement | null>(null);
+  const [achievementQueue, setAchievementQueue] = useState<Achievement[]>([]);
+
+  // Initialize achievements
+  useEffect(() => {
+    initializeAchievements();
+  }, [initializeAchievements]);
+
+  // Handle achievement notifications
+  useEffect(() => {
+    if (achievementQueue.length > 0 && !currentNotification) {
+      setCurrentNotification(achievementQueue[0]);
+      setAchievementQueue(prev => prev.slice(1));
+    }
+  }, [achievementQueue, currentNotification]);
+
+
+  const showAchievements = (newAchievements: Achievement[]) => {
+    if (newAchievements.length > 0) {
+      setAchievementQueue(prev => [...prev, ...newAchievements]);
+    }
+  };
+
+  const dismissNotification = () => {
+    setCurrentNotification(null);
+    markNotificationsSeen();
+  };
 
   useEffect(() => {
     const fetchHealthData = async () => {
@@ -50,6 +90,10 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
         updatePetMood(data);
         // Check life outcome once on load
         checkDailyOutcome();
+        
+        // Check for daily achievements
+        const newAchievements = checkDailyAchievements(data.steps, data.distance);
+        showAchievements(newAchievements);
       } catch (error) {
         console.error("Failed to fetch health data:", error);
       }
@@ -63,10 +107,14 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
       updatePetMood(data);
       updateTodayProgress(data);
       checkDailyOutcome();
+      
+      // Check for daily achievements
+      const newAchievements = checkDailyAchievements(data.steps, data.distance);
+      showAchievements(newAchievements);
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [updateTodayProgress]);
+  }, [updateTodayProgress, checkDailyAchievements]);
 
   // Sync 3D pet state with stored meta (color/mode/lives)
   useEffect(() => {
@@ -87,14 +135,19 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
     const goalsHit = healthService.hasReachedGoals();
     const goodSleep = healthService.hasGoodSleep();
 
+    const previousMood = petState.mood;
     let mood: "happy" | "neutral" | "sad" | "sleepy" = "neutral";
     if (goalsHit) {
       mood = "happy";
+      // Track daily progress achievements
+      const newAchievements = trackDailyProgress(_data.steps, _data.distance, true);
+      showAchievements(newAchievements);
     } else if (!goodSleep) {
       mood = "sleepy"; // sleep affects mood/look but not lives
     } else if (averageProgress < 80) {
       mood = "sad";
     }
+
 
     setPetState((prev) => ({ ...prev, mood }));
   };
@@ -109,6 +162,16 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
     setHealthData(updatedData);
     updatePetMood(updatedData);
     updateTodayProgress(updatedData);
+    
+    // Track pet tap achievement
+    const newAchievements = trackPetTap();
+    showAchievements(newAchievements);
+  };
+
+  const handlePirouette = () => {
+    // Track pirouette achievement
+    const newAchievements = trackPirouette();
+    showAchievements(newAchievements);
   };
 
   const handleDebugReset = () => {
@@ -131,7 +194,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
         return <MapScreen onBack={() => setActive('avatar')} />
       case 'avatar':
       default:
-        return <AvatarScreen petState={petState} onPetTap={handlePetTap} heartLevel={heartLevel} onToggleDebug={() => setDebugOpen((v) => !v)} debugOpen={debugOpen} onOpenMap={() => setActive('map')} />
+        return <AvatarScreen petState={petState} onPetTap={handlePetTap} onPirouette={handlePirouette} heartLevel={heartLevel} onToggleDebug={() => setDebugOpen((v) => !v)} debugOpen={debugOpen} onOpenMap={() => setActive('map')} />
     }
   }
 
@@ -181,6 +244,22 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
                   Reset
                 </button>
               </div>
+              
+              {/* Mood selector */}
+              <div>
+                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Force Mood</label>
+                <select
+                  value={petState.mood}
+                  onChange={(e) => setPetState(prev => ({ ...prev, mood: e.target.value as any }))}
+                  className="w-full px-3 py-2 text-sm rounded-md bg-white/80 dark:bg-black/60 border border-white/40 dark:border-white/20 text-gray-800 dark:text-gray-100"
+                >
+                  <option value="happy">Happy</option>
+                  <option value="neutral">Neutral</option>
+                  <option value="sad">Sad</option>
+                  <option value="sleepy">Sleepy</option>
+                </select>
+              </div>
+              
               <button
                 onClick={() => setDebugOpen(false)}
                 className="w-full px-3 py-2 text-sm rounded-md bg-gray-600 text-white hover:bg-gray-700"
@@ -206,6 +285,12 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
       {active === 'avatar' && !statsOpen && (
         <BottomProgressPeek healthData={healthData} onExpand={() => setStatsOpen(true)} />
       )}
+
+      {/* Achievement notifications */}
+      <AchievementNotification 
+        achievement={currentNotification}
+        onDismiss={dismissNotification}
+      />
     </div>
   );
 };
