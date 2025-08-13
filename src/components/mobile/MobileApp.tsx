@@ -14,6 +14,7 @@ import usePetLifecycle from "../../hooks/usePetLifecycle";
 import { useAchievementStore } from "../../store/achievementStore";
 import { AchievementNotification } from "../AchievementNotification";
 import { Achievement } from "../../types/achievements";
+import ModelExporterDebug from '../ModelExporterDebug';
 
 interface MobileAppProps {
   petName: string;
@@ -135,7 +136,6 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
     const goalsHit = healthService.hasReachedGoals();
     const goodSleep = healthService.hasGoodSleep();
 
-    const previousMood = petState.mood;
     let mood: "happy" | "neutral" | "sad" | "sleepy" = "neutral";
     if (goalsHit) {
       mood = "happy";
@@ -259,6 +259,9 @@ export const MobileApp: React.FC<MobileAppProps> = ({ petName }) => {
                   <option value="sleepy">Sleepy</option>
                 </select>
               </div>
+              
+              {/* Model Exporter in Debug Panel */}
+              <ModelExporterDebug />
               
               <button
                 onClick={() => setDebugOpen(false)}

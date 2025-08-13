@@ -68,39 +68,14 @@ export const LynxApp: React.FC<LynxAppProps> = ({ petName }) => {
     }
   };
 
-  // Handle app lifecycle events
+  // Handle cleanup when capabilities or services change
   useEffect(() => {
-    const handleAppStateChange = async (state: 'active' | 'background' | 'inactive') => {
-      if (!capabilities?.native) return;
-
-      try {
-        if (state === 'active') {
-          // App became active - refresh health data
-          if (healthService instanceof LynxHealthDataService) {
-            await healthService.getHealthData();
-          }
-        } else if (state === 'background') {
-          // App went to background - optimize battery usage
-          console.log('App backgrounded, optimizing...');
-        }
-      } catch (error) {
-        console.error('Error handling app state change:', error);
-      }
-    };
-
-    // Register app state listener if native
-    if (capabilities?.native) {
-      // This would be handled by the Lynx framework
-      console.log('App state change listener registered');
-    }
-
     return () => {
-      // Cleanup subscriptions
       if (healthService instanceof LynxHealthDataService) {
         healthService.cleanup();
       }
     };
-  }, [capabilities, healthService]);
+  }, [healthService]);
 
   // Development panel for testing Lynx integration
   const DevelopmentPanel = () => {
@@ -137,8 +112,7 @@ export const LynxApp: React.FC<LynxAppProps> = ({ petName }) => {
           <br />
           Platform: {capabilities.platform}
           <br />
-          Native: {capabilities.native ? '✅' : '❌'}
-          <br />
+          
           Health: {capabilities.health ? '✅' : '❌'}
           <br />
           Haptics: {capabilities.haptics ? '✅' : '❌'}

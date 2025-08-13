@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react'
-import { Sphere, Torus, Box } from '@react-three/drei'
+import { Sphere, Torus } from '@react-three/drei'
 import { Mesh, Group } from 'three'
 import { useFrame } from '@react-three/fiber'
 import BasePet, { BasePetProps } from './BasePet'
@@ -243,8 +243,8 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
     // Enhanced eye highlight effects
     if (leftHighlightRef.current && rightHighlightRef.current && petState.mood === 'happy') {
       const sparkle = 0.6 + Math.sin(time * 4) * 0.4
-      leftHighlightRef.current.material.emissiveIntensity = sparkle
-      rightHighlightRef.current.material.emissiveIntensity = sparkle
+      ;(leftHighlightRef.current.material as any).emissiveIntensity = sparkle
+      ;(rightHighlightRef.current.material as any).emissiveIntensity = sparkle
     }
 
     // Mouth expression

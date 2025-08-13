@@ -19,7 +19,7 @@ interface AchievementStore {
 
 const achievementService = AchievementService.getInstance();
 
-export const useAchievementStore = create<AchievementStore>((set, get) => ({
+export const useAchievementStore = create<AchievementStore>((set, _get) => ({
   achievements: [],
   userStats: {
     totalSteps: 0,

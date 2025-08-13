@@ -7,6 +7,7 @@ export interface BasePetProps {
   petState: PetState;
   onPetTap: () => void;
   children?: ReactNode;
+  showPirouette?: boolean;
 }
 
 const BasePet: React.FC<BasePetProps> = ({ petState, onPetTap, children }) => {

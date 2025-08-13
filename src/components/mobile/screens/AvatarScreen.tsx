@@ -126,8 +126,12 @@ export const AvatarScreen: React.FC<AvatarScreenProps> = ({ petState, onPetTap, 
       </div>
       {/* Peek sheet handled globally in MobileApp */}
       
-      {/* AR Overlay */}
-      <AROverlay open={arOpen} onClose={() => setArOpen(false)} />
+      {/* WebXR AR overlay (three.js + R3F) */}
+      <AROverlay 
+        open={arOpen}
+        onClose={() => setArOpen(false)}
+        petState={petState}
+      />
     </div>
   )
 }

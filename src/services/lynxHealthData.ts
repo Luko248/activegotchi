@@ -8,7 +8,10 @@ import { HealthDataService } from './healthData';
 export class LynxHealthDataService extends HealthDataService {
   private bridgeService: LynxBridgeService;
   private isSubscribed: boolean = false;
-  private updateCallback?: (data: { steps: number; distance: number }) => void;
+  private currentSteps: number = 0;
+  private currentDistance: number = 0;
+  private goalSteps: number = 10000;
+  private goalDistance: number = 8.0;
 
   constructor() {
     super();
@@ -38,28 +41,29 @@ export class LynxHealthDataService extends HealthDataService {
     }
   }
 
-  async getHealthData(): Promise<{ steps: number; distance: number; goalSteps: number; goalDistance: number }> {
+  getHealthData() {
     if (!this.bridgeService.isNative()) {
-      // Fallback to parent class mock data for web
       return super.getHealthData();
     }
+    return {
+      steps: this.currentSteps,
+      distance: this.currentDistance,
+      goalSteps: this.goalSteps,
+      goalDistance: this.goalDistance,
+      // Include optional fields if base type expects them
+      ...(super.getHealthData() as any).sleepHours !== undefined ? { sleepHours: (super.getHealthData() as any).sleepHours } : {},
+      ...(super.getHealthData() as any).goalSleepHours !== undefined ? { goalSleepHours: (super.getHealthData() as any).goalSleepHours } : {}
+    } as any;
+  }
 
+  async refreshFromNative(): Promise<void> {
+    if (!this.bridgeService.isNative()) return;
     try {
       const nativeData = await this.bridgeService.getHealthData();
-      
-      // Update internal state
       this.currentSteps = nativeData.steps;
       this.currentDistance = nativeData.distance;
-
-      return {
-        steps: nativeData.steps,
-        distance: nativeData.distance,
-        goalSteps: this.goalSteps,
-        goalDistance: this.goalDistance
-      };
     } catch (error) {
-      console.error('Failed to get native health data, falling back to mock:', error);
-      return super.getHealthData();
+      console.error('Failed to refresh native health data:', error);
     }
   }
 
@@ -70,7 +74,7 @@ export class LynxHealthDataService extends HealthDataService {
     }
 
     try {
-      this.updateCallback = callback;
+      // Store not required; callback is invoked directly by bridge subscription
       
       await this.bridgeService.subscribeToHealthUpdates((nativeData) => {
         // Update internal state
@@ -99,7 +103,7 @@ export class LynxHealthDataService extends HealthDataService {
     try {
       await this.bridgeService.unsubscribeFromHealthUpdates();
       this.isSubscribed = false;
-      this.updateCallback = undefined;
+      // No-op: callback reference not stored
       console.log('Unsubscribed from real-time health updates');
     } catch (error) {
       console.error('Failed to unsubscribe from real-time updates:', error);
@@ -139,6 +143,16 @@ export class LynxHealthDataService extends HealthDataService {
     };
   }
 
+  private hasReachedStepsGoal(): boolean {
+    const data: any = this.getHealthData();
+    return data.steps >= data.goalSteps;
+  }
+
+  private hasReachedDistanceGoal(): boolean {
+    const data: any = this.getHealthData();
+    return data.distance >= data.goalDistance;
+  }
+
   // Platform-specific optimizations
   async optimizeForPlatform(): Promise<void> {
     if (!this.bridgeService.isNative()) return;
@@ -165,11 +179,11 @@ export class LynxHealthDataService extends HealthDataService {
     data: boolean;
     capabilities: any;
   }> {
-    const results = {
+    const results: { bridge: boolean; permissions: boolean; data: boolean; capabilities: any } = {
       bridge: false,
       permissions: false,
       data: false,
-      capabilities: null
+      capabilities: {} as any
     };
 
     try {

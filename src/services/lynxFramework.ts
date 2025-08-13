@@ -56,13 +56,9 @@ export interface NativePlugin {
 }
 
 export class LynxBridge {
-  private namespace: string;
-  private timeout: number;
   private isNativeEnvironment: boolean;
 
-  constructor(config: { namespace: string; timeout: number }) {
-    this.namespace = config.namespace;
-    this.timeout = config.timeout;
+  constructor(_config: { namespace: string; timeout: number }) {
     
     // Detect if we're in a native environment
     this.isNativeEnvironment = this.detectNativeEnvironment();
@@ -249,6 +245,4 @@ class MockNativePlugin implements NativePlugin {
   }
 }
 
-// Export the implementations
-export { LynxBridge };
-export { MockNativePlugin as NativePlugin };
+// Consumers can import the interface NativePlugin for typing; the mock class is internal.

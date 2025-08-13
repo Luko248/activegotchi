@@ -2,22 +2,18 @@ import React, { useEffect, useRef, useState, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import ArPetScene from '../3d/ArPetScene';
-import { isAndroid, isIOS, isWebXRAvailable } from '../../services/platform';
-import { arConfig } from '../../services/arConfig';
-import { usePetStore } from '../../store/petStore';
-import { buildAndroidSceneViewerUrl, getArAssetForPet } from '../../services/arAssets';
+import { isWebXRAvailable } from '../../services/platform';
 import { CloseButton } from './CloseButton';
+import { PetState } from '../../types';
 
 interface AROverlayProps {
   open: boolean;
   onClose: () => void;
+  petState?: PetState;
 }
 
-const AROverlay: React.FC<AROverlayProps> = ({ open, onClose }) => {
+const AROverlay: React.FC<AROverlayProps> = ({ open, onClose, petState }) => {
   const [supported, setSupported] = useState<boolean | null>(null);
-  const [ios, setIos] = useState(false);
-  const [android, setAndroid] = useState(false);
-  const pet = usePetStore((s) => s.pet);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
@@ -38,8 +34,6 @@ const AROverlay: React.FC<AROverlayProps> = ({ open, onClose }) => {
       }
     };
     if (open) {
-      setIos(isIOS());
-      setAndroid(isAndroid());
       check();
     }
     return () => {
@@ -53,25 +47,24 @@ const AROverlay: React.FC<AROverlayProps> = ({ open, onClose }) => {
     try {
       // @ts-ignore
       const xr = (navigator as any).xr;
-      if (!xr) throw new Error('WebXR not available');
+      if (!xr || !xr.isSessionSupported) throw new Error('WebXR not available');
+      const supported = await xr.isSessionSupported('immersive-ar');
+      if (!supported) throw new Error('AR session not supported');
+
       const session = await xr.requestSession('immersive-ar', {
-        requiredFeatures: ['local-floor'],
-        optionalFeatures: ['hit-test', 'dom-overlay'],
+        requiredFeatures: ['local-floor', 'hit-test'],
+        optionalFeatures: ['dom-overlay'],
         // domOverlay: { root: document.body },
       });
       sessionRef.current = session;
-      if (glRef.current) {
-        glRef.current.xr.setSession(session);
-        setStarted(true);
-      } else {
-        // Canvas not ready yet, wait a tick
-        setTimeout(() => {
-          if (glRef.current) {
-            glRef.current.xr.setSession(session);
-            setStarted(true);
-          }
-        }, 100);
-      }
+      setStarted(true);
+      // When session ends, clean up UI state
+      session.addEventListener('end', () => {
+        setStarted(false);
+        sessionRef.current = null;
+        setPlaced(false);
+        setReticleVisible(false);
+      }, { once: true });
     } catch (e: any) {
       setError(e?.message || 'Failed to start AR');
     } finally {
@@ -99,24 +92,33 @@ const AROverlay: React.FC<AROverlayProps> = ({ open, onClose }) => {
       {/* Dim backdrop when not in AR session; transparent once AR starts */}
       {!started && <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />}
 
-      <div className="absolute inset-0">
-        {/* AR Canvas always mounted so renderer is ready */}
-        <Canvas
-          onCreated={({ gl }) => {
-            gl.xr.enabled = true;
-            glRef.current = gl;
-          }}
-          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-          className="w-full h-full"
-        >
-          <Suspense fallback={null}>
-            <ArPetScene 
-              onStatusChange={({ placed, reticleVisible }) => { setPlaced(placed); setReticleVisible(reticleVisible); }}
-              resetSignal={resetCounter}
-            />
-          </Suspense>
-        </Canvas>
-      </div>
+      {started && (
+        <div className="absolute inset-0">
+          {/* Mount WebGL only after XR session starts to avoid jank */}
+          <Canvas
+            onCreated={({ gl }) => {
+              gl.xr.enabled = true;
+              // Prefer local-floor reference space
+              ;(gl.xr as any).setReferenceSpaceType?.('local-floor');
+              glRef.current = gl;
+              // Attach the active session if present
+              if (sessionRef.current) {
+                gl.xr.setSession(sessionRef.current);
+              }
+            }}
+            gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+            className="w-full h-full"
+          >
+            <Suspense fallback={null}>
+              <ArPetScene 
+                petState={petState}
+                onStatusChange={({ placed, reticleVisible }) => { setPlaced(placed); setReticleVisible(reticleVisible); }}
+                resetSignal={resetCounter}
+              />
+            </Suspense>
+          </Canvas>
+        </div>
+      )}
 
       {/* Controls overlay */}
       <div className="absolute inset-0 pointer-events-none">
@@ -143,51 +145,9 @@ const AROverlay: React.FC<AROverlayProps> = ({ open, onClose }) => {
                   </button>
                 </>
               )}
-              {supported === false && ios && (
-                <>
-                  <div className="text-gray-900 dark:text-gray-100 font-semibold mb-2">View in AR (iOS)</div>
-                  {(() => {
-                    const assets = getArAssetForPet(pet);
-                    return (
-                      <a
-                        rel="ar"
-                        href={assets.iosUSDZPath || arConfig.iosUSDZPath}
-                        className="inline-flex items-center justify-center w-full py-2 rounded-xl bg-black/80 text-white font-semibold shadow-lg"
-                        aria-label="Open in AR Quick Look"
-                      >
-                        Open in AR
-                      </a>
-                    );
-                  })()}
-                  <div className="text-xs text-gray-700 dark:text-gray-300 mt-2">
-                    Place a USDZ under <code className="px-1 py-0.5 bg-black/20 rounded">public/ar/&lt;kind&gt;.usdz</code>.
-                  </div>
-                </>
-              )}
-              {supported === false && android && (
-                <>
-                  <div className="text-gray-900 dark:text-gray-100 font-semibold mb-2">View in AR (Android)</div>
-                  {(() => {
-                    const assets = getArAssetForPet(pet);
-                    const href = buildAndroidSceneViewerUrl(assets.androidGLBPath || arConfig.androidGLBPath || '/ar/pet.glb', assets.title);
-                    return (
-                      <a
-                        href={href}
-                        className="inline-flex items-center justify-center w-full py-2 rounded-xl bg-black/80 text-white font-semibold shadow-lg"
-                        aria-label="Open in AR Scene Viewer"
-                      >
-                        Open in AR
-                      </a>
-                    );
-                  })()}
-                  <div className="text-xs text-gray-700 dark:text-gray-300 mt-2">
-                    Place a GLB under <code className="px-1 py-0.5 bg-black/20 rounded">public/ar/&lt;kind&gt;.glb</code>.
-                  </div>
-                </>
-              )}
-              {supported === false && !ios && (
+              {supported === false && (
                 <div className="text-gray-800 dark:text-gray-200 text-sm">
-                  AR not supported. Update Chrome or enable WebXR.
+                  AR not supported on this device/browser.
                 </div>
               )}
               {error && (

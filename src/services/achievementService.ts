@@ -351,7 +351,6 @@ export class AchievementService {
 
   private mergeWithDefaults(stored: Achievement[]): Achievement[] {
     const merged = [...this.defaultAchievements];
-    const storedIds = new Set(stored.map(a => a.id));
     
     // Update existing achievements with stored data
     stored.forEach(storedAchievement => {
