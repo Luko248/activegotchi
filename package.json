@@ -21,7 +21,13 @@
     "cap:sync": "cap sync",
     "cap:run:ios": "cap run ios",
     "cap:run:android": "cap run android",
-    "mobile:build": "npm run build && cap sync"
+    "mobile:build": "npm run build && cap sync",
+    "lynx:init": "lynx init",
+    "lynx:dev": "lynx dev",
+    "lynx:build": "npm run build && lynx build",
+    "lynx:ios": "lynx run ios",
+    "lynx:android": "lynx run android",
+    "lynx:sync": "lynx sync"
   },
   "repository": {
     "type": "git",

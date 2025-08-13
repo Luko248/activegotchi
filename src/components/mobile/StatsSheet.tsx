@@ -41,11 +41,14 @@ export const StatsSheet: React.FC<StatsSheetProps> = ({
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={0.2}
-        onDragEnd={(_, info) => { if ((info?.offset?.y ?? 0) > 60 || (info?.velocity?.y ?? 0) > 500) onClose(); }}
+        onDragEnd={(_, info) => {
+          if ((info?.offset?.y ?? 0) > 60 || (info?.velocity?.y ?? 0) > 500)
+            onClose();
+        }}
       >
         {/* Handle bar */}
         <div className="flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing">
-          <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+          <div className="w-12 h-0.5 bg-gray-300 dark:bg-gray-600 rounded-full" />
         </div>
 
         {/* Header */}

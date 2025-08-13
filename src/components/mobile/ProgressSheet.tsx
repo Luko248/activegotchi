@@ -26,7 +26,7 @@ export const ProgressSheet: React.FC<ProgressSheetProps> = ({ onClose }) => {
       >
         {/* Handle bar */}
         <div className="flex justify-center pt-4 pb-2">
-          <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+          <div className="w-12  h-0.5 bg-gray-300 dark:bg-gray-600 rounded-full" />
         </div>
 
         {/* Header */}

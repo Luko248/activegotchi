@@ -391,7 +391,7 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
         </Sphere>
 
         {/* Secondary smaller highlights */}
-        <Sphere args={[0.02, 16, 16]} position={[-0.34, EYE_Y - 0.06, HIGHLIGHT_Z + 0.001]}>
+        <Sphere args={[0.02, 16, 16]} position={[-0.34, EYE_Y - 0.06, HIGHLIGHT_Z + 0.001]} scale={[1, 1, 0.1]}>
           <meshStandardMaterial 
             color="#ffffff" 
             emissive="#ffffff" 
@@ -400,7 +400,7 @@ const CuteAvatarPet: React.FC<BasePetProps> = ({ petState, onPetTap, showPirouet
             opacity={0.7}
           />
         </Sphere>
-        <Sphere args={[0.02, 16, 16]} position={[0.30, EYE_Y - 0.06, HIGHLIGHT_Z + 0.001]}>
+        <Sphere args={[0.02, 16, 16]} position={[0.30, EYE_Y - 0.06, HIGHLIGHT_Z + 0.001]} scale={[1, 1, 0.1]}>
           <meshStandardMaterial 
             color="#ffffff" 
             emissive="#ffffff" 
